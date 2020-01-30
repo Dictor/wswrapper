@@ -18,10 +18,10 @@ const (
 )
 
 type WebsocketEvent struct {
-	kind   WebsocketEventKind
-	client *WebsocketClient
-	msg    *[]byte
-	err    error
+	Kind   WebsocketEventKind
+	Client *WebsocketClient
+	Msg    *[]byte
+	Err    error
 }
 
 type WebsocketHub struct {
