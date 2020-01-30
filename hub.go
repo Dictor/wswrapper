@@ -33,7 +33,7 @@ type WebsocketHub struct {
 	unregister   chan *WebsocketClient
 }
 
-func NewHub() *WebsocketHub {
+func NewWebsocketHub() *WebsocketHub {
 	return &WebsocketHub{
 		broadcast:    make(chan []byte),
 		event:        make(chan *WebsocketEvent),
@@ -75,7 +75,7 @@ func (h *WebsocketHub) closeClient(cli *WebsocketClient) {
 	delete(h.clients, cli)
 }
 
-func (h *WebsocketHub) Send(cli *WebsocketClient, msg *[]byte) bool {
+func (h *WebsocketHub) SendSafe(cli *WebsocketClient, msg *[]byte) bool {
 	select {
 	case cli.send <- *msg:
 		return true
