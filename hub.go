@@ -58,7 +58,7 @@ func (h *WebsocketHub) Run(event_callback func(*WebsocketEvent)) {
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
-				if h.SendSafe(client, &message) {
+				if h.Send(client, &message) {
 					event_callback(&WebsocketEvent{EVENT_BROADCAST, client, nil, nil})
 				} else {
 					event_callback(&WebsocketEvent{EVENT_UNREGISTER, client, nil, nil})
