@@ -40,6 +40,14 @@ type WebsocketClient struct {
 	send chan []byte
 }
 
+func (c *WebsocketClient) Connection() *websocket.Conn {
+	return c.conn
+}
+
+func (c *WebsocketClient) Hub() *WebsocketHub {
+	return c.hub
+}
+
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application

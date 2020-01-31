@@ -33,7 +33,7 @@ type WebsocketHub struct {
 	unregister   chan *WebsocketClient
 }
 
-func NewWebsocketHub() *WebsocketHub {
+func NewHub() *WebsocketHub {
 	return &WebsocketHub{
 		broadcast:    make(chan []byte),
 		event:        make(chan *WebsocketEvent),
@@ -58,7 +58,7 @@ func (h *WebsocketHub) Run(event_callback func(*WebsocketEvent)) {
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
-				if h.Send(client, &message) {
+				if h.Send(client, message) {
 					event_callback(&WebsocketEvent{EVENT_BROADCAST, client, nil, nil})
 				} else {
 					event_callback(&WebsocketEvent{EVENT_UNREGISTER, client, nil, nil})
@@ -75,14 +75,18 @@ func (h *WebsocketHub) closeClient(cli *WebsocketClient) {
 	delete(h.clients, cli)
 }
 
-func (h *WebsocketHub) SendSafe(cli *WebsocketClient, msg *[]byte) bool {
+func (h *WebsocketHub) Send(cli *WebsocketClient, msg []byte) bool {
 	select {
-	case cli.send <- *msg:
+	case cli.send <- msg:
 		return true
 	default: // when client.send closed, close and delete client
 		h.closeClient(cli)
 		return false
 	}
+}
+
+func (h *WebsocketHub) SendAll(msg []byte) {
+	h.broadcast <- msg
 }
 
 func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
@@ -98,4 +102,8 @@ func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go client.writePump()
 	go client.readPump()
+}
+
+func (h *WebsocketHub) Clients() map[*WebsocketClient]int {
+	return h.clients
 }
