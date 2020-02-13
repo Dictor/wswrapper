@@ -104,6 +104,17 @@ func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 	go client.readPump()
 }
 
+func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		for _, val := range origin {
+			if val == r.Host {
+				return true
+			}
+		}
+		return false
+	}
+}
+
 func (h *WebsocketHub) Clients() map[*WebsocketClient]int {
 	return h.clients
 }
