@@ -48,6 +48,10 @@ func (c *WebsocketClient) Hub() *WebsocketHub {
 	return c.hub
 }
 
+func (c *WebsocketClient) Send(msg []byte) {
+	c.hub.Send(c, msg)
+}
+
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application
