@@ -4,6 +4,8 @@
 package wswrapper // import "github.com/dictor/wswrapper"
 
 import (
+	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 )
 
@@ -31,6 +33,7 @@ type WebsocketHub struct {
 	event        chan *WebsocketEvent
 	register     chan *WebsocketClient
 	unregister   chan *WebsocketClient
+	upgrader     websocket.Upgrader
 }
 
 func NewHub() *WebsocketHub {
@@ -41,6 +44,10 @@ func NewHub() *WebsocketHub {
 		unregister:   make(chan *WebsocketClient),
 		clients:      make(map[*WebsocketClient]int),
 		clientsCount: 0,
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		},
 	}
 }
 
@@ -90,7 +97,7 @@ func (h *WebsocketHub) SendAll(msg []byte) {
 }
 
 func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		h.event <- &WebsocketEvent{EVENT_ERROR, nil, nil, err}
 		return
@@ -105,7 +112,9 @@ func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
+	log.Printf("CO before : %p ", h.upgrader.CheckOrigin)
+	h.upgrader.CheckOrigin = func(r *http.Request) bool {
+		log.Println(r.Host)
 		for _, val := range origin {
 			if val == r.Host {
 				return true
@@ -113,6 +122,7 @@ func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
 		}
 		return false
 	}
+	log.Printf("CO after : %p ", h.upgrader.CheckOrigin)
 }
 
 func (h *WebsocketHub) Clients() map[*WebsocketClient]int {
