@@ -112,9 +112,7 @@ func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
-	log.Printf("CO before : %p ", h.upgrader.CheckOrigin)
 	h.upgrader.CheckOrigin = func(r *http.Request) bool {
-		log.Println(r.Host)
 		for _, val := range origin {
 			if val == r.Host {
 				return true
@@ -122,7 +120,6 @@ func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
 		}
 		return false
 	}
-	log.Printf("CO after : %p ", h.upgrader.CheckOrigin)
 }
 
 func (h *WebsocketHub) Clients() map[*WebsocketClient]int {
