@@ -5,7 +5,6 @@ package wswrapper // import "github.com/dictor/wswrapper"
 
 import (
 	"github.com/gorilla/websocket"
-	"log"
 	"net/http"
 )
 
