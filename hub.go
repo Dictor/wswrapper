@@ -36,7 +36,7 @@ type WebsocketHub struct {
 
 func NewHub() *WebsocketHub {
 	return &WebsocketHub{
-		broadcast:    make(chan []byte),
+		broadcast:    make(chan []byte, 1),
 		event:        make(chan *WebsocketEvent),
 		register:     make(chan *WebsocketClient),
 		unregister:   make(chan *WebsocketClient),
