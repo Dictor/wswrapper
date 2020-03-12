@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <script>
+            var ws = new WebSocket((window.location.protocol == "http:" ? "ws:" : "wss:") + "//" + window.location.host + "/ws");
+            ws.onopen = function(e) {
+                print("[Websocket connected!]");
+            };
+            ws.onerror = function(e) {
+                print("[Websocket error caused!]");
+            };
+            ws.onmessage = function(e) {
+                print(e.data);
+            };
+            
+            function print(s) {
+                document.getElementById("chat").innerHTML += (s + "<br>");
+            }
+            
+            function sendMsg() {
+                ws.send(document.getElementById("chat-input").value);
+                document.getElementById("chat-input").value = "";
+            }
+        </script>
+    </head>
+    <body>
+        <input type="text" id="chat-input">
+        <button onclick="javascript:sendMsg()">Send</button>
+        <p id="chat"></p>
+    </body>
+</html>
