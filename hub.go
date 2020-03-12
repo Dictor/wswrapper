@@ -89,7 +89,10 @@ func (h *WebsocketHub) Send(cli *WebsocketClient, msg []byte) bool {
 }
 
 func (h *WebsocketHub) SendAll(msg []byte) {
-	h.broadcast <- msg
+	// Sending in separated goroutine for preventing deadlock
+	go func() {
+		h.broadcast <- msg
+	}()
 }
 
 func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
