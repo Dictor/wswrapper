@@ -14,7 +14,6 @@ const (
 	EVENT_RECIEVE WebsocketEventKind = iota
 	EVENT_REGISTER
 	EVENT_UNREGISTER
-	EVENT_BROADCAST
 	EVENT_ERROR
 )
 
@@ -64,9 +63,7 @@ func (h *WebsocketHub) Run(event_callback func(*WebsocketEvent)) {
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
-				if h.Send(client, message) {
-					event_callback(&WebsocketEvent{EVENT_BROADCAST, client, nil, nil})
-				} else {
+				if !h.Send(client, message) {
 					event_callback(&WebsocketEvent{EVENT_UNREGISTER, client, nil, nil})
 				}
 			}
