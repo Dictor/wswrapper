@@ -35,18 +35,22 @@ type WebsocketClient struct {
 	send chan []byte
 }
 
+//Get Conn object
 func (c *WebsocketClient) Connection() *websocket.Conn {
 	return c.conn
 }
 
+//Get server where client was registered.
 func (c *WebsocketClient) Hub() *WebsocketHub {
 	return c.hub
 }
 
+//Send message
 func (c *WebsocketClient) Send(msg []byte) {
 	c.hub.Send(c, msg)
 }
 
+//Get client's unique id
 func (c *WebsocketClient) Id() int {
 	return c.hub.Clients()[c]
 }

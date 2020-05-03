@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+//Explicit type for directing websocket event kind.
 type WebsocketEventKind int
 
 const (
@@ -17,13 +18,15 @@ const (
 	EVENT_ERROR
 )
 
+//Websocket event object which passing to event handler
 type WebsocketEvent struct {
-	Kind   WebsocketEventKind
-	Client *WebsocketClient
-	Msg    *[]byte
-	Err    error
+	Kind   WebsocketEventKind //event kind
+	Client *WebsocketClient   //client address who causes this event
+	Msg    *[]byte            //message data when event kind is EVENT_RECIEVE
+	Err    error              //error data when event kind is EVENT_ERROR
 }
 
+//Websocket server object. No public field.
 type WebsocketHub struct {
 	clients      map[*WebsocketClient]int
 	clientsCount int
@@ -34,6 +37,7 @@ type WebsocketHub struct {
 	upgrader     websocket.Upgrader
 }
 
+//Create new websocket server object
 func NewHub() *WebsocketHub {
 	return &WebsocketHub{
 		broadcast:    make(chan []byte, 1),
@@ -49,6 +53,7 @@ func NewHub() *WebsocketHub {
 	}
 }
 
+//Listen client registering and data receiving. Passed callback will be called when any events cause
 func (h *WebsocketHub) Run(event_callback func(*WebsocketEvent)) {
 	for {
 		select {
@@ -73,11 +78,13 @@ func (h *WebsocketHub) Run(event_callback func(*WebsocketEvent)) {
 	}
 }
 
+//Disconnect client and drop client record.
 func (h *WebsocketHub) closeClient(cli *WebsocketClient) {
 	close(cli.send)
 	delete(h.clients, cli)
 }
 
+//Send message to passed client address. When passed client is inactive state then it will be unregisterd.
 func (h *WebsocketHub) Send(cli *WebsocketClient, msg []byte) bool {
 	select {
 	case cli.send <- msg:
@@ -88,6 +95,7 @@ func (h *WebsocketHub) Send(cli *WebsocketClient, msg []byte) bool {
 	}
 }
 
+//Repeat Send() for all registerd clients.
 func (h *WebsocketHub) SendAll(msg []byte) {
 	// Sending in separated goroutine for preventing deadlock
 	go func() {
@@ -95,6 +103,7 @@ func (h *WebsocketHub) SendAll(msg []byte) {
 	}()
 }
 
+//Register client from http request.
 func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -110,6 +119,7 @@ func (h *WebsocketHub) AddClient(w http.ResponseWriter, r *http.Request) {
 	go client.readPump()
 }
 
+//Set origin header when will be sended websocket registering (upgrading)
 func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
 	h.upgrader.CheckOrigin = func(r *http.Request) bool {
 		for _, val := range origin {
@@ -121,6 +131,7 @@ func (h *WebsocketHub) AddUpgraderOrigin(origin []string) {
 	}
 }
 
+//Get all registerd clients
 func (h *WebsocketHub) Clients() map[*WebsocketClient]int {
 	return h.clients
 }
